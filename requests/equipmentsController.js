@@ -90,7 +90,8 @@ module.exports.addEquipment = async function (req, res) {
 
 module.exports.addEquipmnetType = async function (req, res) {
     try {
-        const result = await db.one()
+        const { equipment_type_name } = req.body;
+        const result = await db.oneOrNone(`insert into equipment_type(equipment_type_name) values ('${ equipment_type_name }');`)
         return res.status(200).json(result)
     }
     catch(e) {
@@ -101,7 +102,8 @@ module.exports.addEquipmnetType = async function (req, res) {
 
 module.exports.addEquipmnetStatus = async function (req, res) {
     try {
-        const result = await db.one()
+        const { equipment_status_name } = req.body;
+        const result = await db.oneOrNone(`insert into equipment_status(equipment_equipment_status_name) values ('${ equipment_status_name }');`)
         return res.status(200).json(result)
     }
     catch(e) {
@@ -112,7 +114,15 @@ module.exports.addEquipmnetStatus = async function (req, res) {
 
 module.exports.addEquipmnetResponsible = async function (req, res) {
     try {
-        const result = await db.one()
+        const { 
+            division_id, 
+            equipment_responsible_f_name, 
+            equipment_responsible_s_name,
+            equipment_responsible_l_name, 
+            equipment_responsible_position } = req.body;
+        const result = await db.oneOrNone(`insert into equipment_responsible(division_id, equipment_responsible_f_name, equipment_responsible_s_name,
+            equipment_responsible_l_name, equipment_responsible_position) values 
+            (${ division_id },'${ equipment_responsible_f_name }','${ equipment_responsible_s_name }','${ equipment_responsible_l_name }','${ equipment_responsible_position }')`)
         return res.status(200).json(result)
     }
     catch(e) {
@@ -124,7 +134,7 @@ module.exports.addEquipmnetResponsible = async function (req, res) {
 module.exports.addDivision = async function (req, res) {
     try {
         const { division_name } = req.body;
-        const result = await db.one(`INSERT INTO division(division_name) VALUES ('${division_name}');`)
+        const result = await db.oneOrNone(`INSERT INTO division(division_name) VALUES ('${division_name}');`)
         return res.status(200).json(result)
     }
     catch(e) {
@@ -132,7 +142,9 @@ module.exports.addDivision = async function (req, res) {
         res.status(500).json({ error: 'Произошла ошибка' });
     }
 }
+
 /* Обновление существующих данных */
+
 module.exports.updateEquipmentsList = async function (req, res) {
     try {
         const result = await db.one()
