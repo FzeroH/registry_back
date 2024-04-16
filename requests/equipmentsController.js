@@ -145,9 +145,19 @@ module.exports.addDivision = async function (req, res) {
 
 /* Обновление существующих данных */
 
-module.exports.updateEquipmentsList = async function (req, res) {
+module.exports.updateEquipment = async function (req, res) {
     try {
-        const result = await db.one()
+        const { 
+            equipment_id,
+            equipment_type_id, 
+            equipment_status_id , 
+            equipment_responsible_id, 
+            equipment_name, 
+            inventory_number } = req.body;
+        const result = await db.oneOrNone(`update equipment
+        set equipment_type_id = ${ equipment_type_id }, equipment_status_id = ${ equipment_status_id }, 
+        equipment_responsible_id = ${ equipment_responsible_id }, equipment_name = '${ equipment_name }',
+        inventory_number = '${ inventory_number }' where equipment_id = ${ equipment_id };`);
         return res.status(200).json(result)
     }
     catch(e) {
@@ -158,7 +168,8 @@ module.exports.updateEquipmentsList = async function (req, res) {
 
 module.exports.updateEquipmnetType = async function (req, res) {
     try {
-        const result = await db.one()
+        const { equipment_type_id, equipment_type_name } = req.body;
+        const result = await db.oneOrNone(`update equipment_type set equipment_type_name = '${ equipment_type_name }' where equipment_type_id = ${ equipment_type_id };`)
         return res.status(200).json(result)
     }
     catch(e) {
@@ -169,7 +180,8 @@ module.exports.updateEquipmnetType = async function (req, res) {
 
 module.exports.updateEquipmnetStatus = async function (req, res) {
     try {
-        const result = await db.one()
+        const { equipment_status_id, equipment_status_name } = req.body;
+        const result = await db.oneOrNone(`update equipment_status set equipment_status_name = '${ equipment_status_name }' where equipment_status_id = ${ equipment_status_id };`)
         return res.status(200).json(result)
     }
     catch(e) {
@@ -180,7 +192,20 @@ module.exports.updateEquipmnetStatus = async function (req, res) {
 
 module.exports.updateEquipmnetResponsible = async function (req, res) {
     try {
-        const result = await db.one()
+        const { 
+            equipment_responsible_id,
+            division_id,
+            equipment_responsible_f_name,
+            equipment_responsible_s_name,
+            equipment_responsible_l_name,
+            equipment_responsible_position,
+
+        } = req.body
+        const result = await db.oneOrNone(`update equipment_responsible 
+        set division_id = ${ division_id }, equipment_responsible_f_name = '${ equipment_responsible_f_name }',
+        equipment_responsible_s_name = '${ equipment_responsible_s_name }', equipment_responsible_l_name = '${ equipment_responsible_l_name }',
+        equipment_responsible_position = '${ equipment_responsible_position }'
+        where equipment_responsible_id = ${ equipment_responsible_id };`)
         return res.status(200).json(result)
     }
     catch(e) {
@@ -191,8 +216,8 @@ module.exports.updateEquipmnetResponsible = async function (req, res) {
 
 module.exports.updateDivision = async function (req, res) {
     try {
-        const { division_name } = req.body;
-        const result = await db.one(`INSERT INTO division(division_name) VALUES ('${division_name}');`)
+        const { division_id, division_name } = req.body;
+        const result = await db.oneOrNone(`update division set division_name = '${ division_name }' where division_id = ${ division_id };`)
         return res.status(200).json(result)
     }
     catch(e) {

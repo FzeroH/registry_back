@@ -17,7 +17,7 @@ router.post('/responsible', controller.addEquipmnetResponsible);
 router.post('/division', controller.addDivision);
 
 /* Запросы для обновления данных в таблицы */
-router.put('/equipments', controller.updateEquipmentsList);
+router.put('/equipments', controller.updateEquipment);
 router.put('/status', controller.updateEquipmnetStatus);
 router.put('/types', controller.updateEquipmnetType);
 router.put('/responsible', controller.updateEquipmnetResponsible);
