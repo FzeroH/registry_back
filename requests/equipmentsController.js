@@ -8,6 +8,8 @@ module.exports.getEquipmentsList = async function (req, res) {
         const result = await db.manyOrNone(`select equipment_id, equipment_type_name, 
         equipment_status_name, 
         equipment_responsible_l_name || ' ' || equipment_responsible_f_name || ' ' || equipment_responsible_s_name as equipment_responsible_full_name,
+        equipment.equipment_responsible_id, equipment.equipment_status_id, 
+        equipment.equipment_type_id,
         equipment_name, inventory_number,
         division_name, equipment_responsible_position
         from equipment
@@ -51,8 +53,8 @@ module.exports.getEquipmnetResponsible = async function (req, res) {
     try {
         const result = await db.manyOrNone(`select equipment_responsible_id, 
         equipment_responsible_l_name || ' ' || equipment_responsible_f_name || ' ' || equipment_responsible_s_name 
-        as equipment_responsible_full_name, division_id, equipment_responsible_position
-        from equipment_responsible;`)
+        as equipment_responsible_full_name, equipment_responsible.division_id, division_name, equipment_responsible_position
+        from equipment_responsible join division on equipment_responsible.division_id = division.division_id;`)
         return res.status(200).json(result)
     }
     catch(e) {
