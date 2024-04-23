@@ -10,7 +10,7 @@ module.exports.getEquipmentsList = async function (req, res) {
         equipment_responsible_l_name || ' ' || equipment_responsible_f_name || ' ' || equipment_responsible_s_name as equipment_responsible_full_name,
         equipment.equipment_responsible_id, equipment.equipment_status_id, 
         equipment.equipment_type_id,
-        equipment_name, inventory_number,
+        equipment_name, inventory_number, equipment_responsible.division_id,
         division_name, equipment_responsible_position
         from equipment
         join equipment_type 
