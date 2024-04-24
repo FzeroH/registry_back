@@ -4,10 +4,10 @@ const controller = require('../requests/equipmentsController');
 
 /* Запросы для получения данных из таблицы */
 router.get('/equipments', controller.getEquipmentsList);
-router.get('/status', controller.getEquipmnetStatus);
-router.get('/types', controller.getEquipmnetType);
-router.get('/responsible', controller.getEquipmnetResponsible);
-router.get('/division', controller.getDivision);
+router.get('/status', controller.getEquipmnetStatusList);
+router.get('/types', controller.getEquipmnetTypeList);
+router.get('/responsible', controller.getEquipmnetResponsibleList);
+router.get('/division', controller.getDivisionList);
 
 /* Запросы для добавления данных в таблицы */
 router.post('/equipments', controller.addEquipment);

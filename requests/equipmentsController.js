@@ -27,9 +27,9 @@ module.exports.getEquipmentsList = async function (req, res) {
     }
 }
 
-module.exports.getEquipmnetType = async function (req, res) {
+module.exports.getEquipmnetTypeList = async function (req, res) {
     try {
-        const result = await db.manyOrNone(`select * from equipment_type;`)
+        const result = await db.manyOrNone(`select * from equipment_type order by equipment_type_id asc;`)
         return res.status(200).json(result)
     }
     catch(e) {
@@ -38,9 +38,9 @@ module.exports.getEquipmnetType = async function (req, res) {
     }
 }
 
-module.exports.getEquipmnetStatus = async function (req, res) {
+module.exports.getEquipmnetStatusList = async function (req, res) {
     try {
-        const result = await db.manyOrNone(`select * from equipment_status;`)
+        const result = await db.manyOrNone(`select * from equipment_status order by equipment_status_id asc;`)
         return res.status(200).json(result)
     }
     catch(e) {
@@ -49,12 +49,12 @@ module.exports.getEquipmnetStatus = async function (req, res) {
     }
 }
 
-module.exports.getEquipmnetResponsible = async function (req, res) {
+module.exports.getEquipmnetResponsibleList = async function (req, res) {
     try {
-        const result = await db.manyOrNone(`select equipment_responsible_id, 
+        const result = await db.manyOrNone(`select equipment_responsible_id,
         equipment_responsible_l_name || ' ' || equipment_responsible_f_name || ' ' || equipment_responsible_s_name 
         as equipment_responsible_full_name, equipment_responsible.division_id, division_name, equipment_responsible_position
-        from equipment_responsible join division on equipment_responsible.division_id = division.division_id;`)
+        from equipment_responsible join division on equipment_responsible.division_id = division.division_id order by equipment_responsible_id asc;`)
         return res.status(200).json(result)
     }
     catch(e) {
@@ -63,9 +63,9 @@ module.exports.getEquipmnetResponsible = async function (req, res) {
     }
 }
 
-module.exports.getDivision = async function (req, res) {
+module.exports.getDivisionList = async function (req, res) {
     try {
-        const result = await db.manyOrNone(`select * from division;`)
+        const result = await db.manyOrNone(`select * from division order by division_id asc;`)
         return res.status(200).json(result)
     }
     catch(e) {
@@ -105,7 +105,7 @@ module.exports.addEquipmnetType = async function (req, res) {
 module.exports.addEquipmnetStatus = async function (req, res) {
     try {
         const { equipment_status_name } = req.body;
-        const result = await db.oneOrNone(`insert into equipment_status(equipment_equipment_status_name) values ('${ equipment_status_name }');`)
+        const result = await db.oneOrNone(`insert into equipment_status(equipment_status_name) values ('${ equipment_status_name }');`)
         return res.status(200).json(result)
     }
     catch(e) {
