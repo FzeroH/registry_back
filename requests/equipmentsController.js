@@ -1,7 +1,7 @@
 const { db } = require('../config/pg.config');
 
 /* Авторизация и регистрация */
-
+// TODO: Добавить проверку пользователя на существование
 module.exports.registration = async function (req, res) {
     try {
         const { login, password } = req.body;
@@ -43,9 +43,20 @@ module.exports.getEquipmentsList = async function (req, res) {
         join equipment_status on equipment.equipment_status_id = equipment_status.equipment_status_id
         join equipment_responsible on equipment.equipment_responsible_id = equipment_responsible.equipment_responsible_id
         join division on equipment_responsible.division_id = division.division_id
-        join user on equipment.user_id = user.user_id
+        join "user" as us on equipment.user_id = us.user_id
         order by ${order} ${sort};`)
-        return res.status(200).json(result)
+
+        const formatted_result = result.map((el) => {
+            const date_start = new Date(el.date_start);
+            const date_start_string = `${date_start.getFullYear()}-${String(date_start.getMonth()+1).padStart(2,'0')}-${String(date_start.getDate()).padStart(2,'0')}`;
+
+            const date_update = new Date(el.date_update);
+            const date_update_string = `${date_update.getFullYear()}-${String(date_update.getMonth()+1).padStart(2,'0')}-${String(date_update.getDate()).padStart(2,'0')}`;
+            return { ...el, date_start: date_start_string, date_update: date_update_string }
+        })
+        console.log(formatted_result[0].date_start);
+        console.log(formatted_result[0].date_update);
+        return res.status(200).json(formatted_result)
     }
     catch(e) {
         console.error(e);
@@ -101,7 +112,7 @@ module.exports.getDivisionList = async function (req, res) {
 }
 
 /* Добавление новых данных */
-
+// TODO: Изменить функцию добавления оборудования, добавив пользователя, который добавляет
 module.exports.addEquipment = async function (req, res) {
     try {
         const { equipment_type_id, equipment_status_id, equipment_responsible_id, equipment_name, inventory_number } = req.body;
@@ -176,7 +187,7 @@ module.exports.addDivision = async function (req, res) {
 module.exports.updateEquipment = async function (req, res) {
     try {
         const date = new Date();
-        const dateString = `${date.getFullYear()}-${date.getMonth()}-${date.getDay()}`
+        const dateString = `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`
         const { 
             equipment_id,
             equipment_type_id, 
