@@ -5,8 +5,13 @@ const { db } = require('../config/pg.config');
 module.exports.registration = async function (req, res) {
     try {
         const { login, password } = req.body;
-        const result = await db.one(`insert into user (login, password) values ('${login}', '${password}') returning user_id;`)
-        return res.status(200).json(result)
+        if (await db.oneOrNone(`select user_id from "user" where login = '${login}'`)) {
+            res.status(409).json({ error: 'Пользователь существует' });
+        } 
+        else {
+            await db.oneOrNone(`insert into "user" (login, password) values ('${login}', '${password}');`)
+            return res.status(200).json({message:"Пользователь успешно создан!"})
+        }
     }
     catch(e) {
         console.error(e);
@@ -17,7 +22,7 @@ module.exports.registration = async function (req, res) {
 module.exports.login = async function (req, res) {
     try {
         const { login, password } = req.body;
-        const result = await db.oneOrNone(`select user_id, login from user where login = ${login}, password = ${password};`)
+        const result = await db.one(`select user_id from "user" where login = '${login}' and password = '${password}'`)
         return res.status(200).json(result)
     }
     catch(e) {
@@ -115,10 +120,10 @@ module.exports.getDivisionList = async function (req, res) {
 // TODO: Изменить функцию добавления оборудования, добавив пользователя, который добавляет
 module.exports.addEquipment = async function (req, res) {
     try {
-        const { equipment_type_id, equipment_status_id, equipment_responsible_id, equipment_name, inventory_number } = req.body;
+        const { equipment_type_id, equipment_status_id, equipment_responsible_id, equipment_name, inventory_number, user_id } = req.body;
         const result = await db.oneOrNone(`insert into equipment(equipment_type_id, 
-            equipment_status_id, equipment_responsible_id, equipment_name, inventory_number) values
-            (${ equipment_type_id }, ${ equipment_status_id }, ${ equipment_responsible_id }, '${ equipment_name }', '${ inventory_number }');`)
+            equipment_status_id, equipment_responsible_id, user_id, equipment_name, inventory_number) values
+            (${ equipment_type_id }, ${ equipment_status_id }, ${ equipment_responsible_id }, ${user_id}, '${ equipment_name }', '${ inventory_number }');`)
         return res.status(200).json(result)
     }
     catch(e) {
