@@ -1,5 +1,30 @@
 const { db } = require('../config/pg.config');
 
+/* Авторизация и регистрация */
+
+module.exports.registration = async function (req, res) {
+    try {
+        const { login, password } = req.body;
+        const result = await db.one(`insert into user (login, password) values ('${login}', '${password}') returning user_id;`)
+        return res.status(200).json(result)
+    }
+    catch(e) {
+        console.error(e);
+        res.status(500).json({ error: 'Произошла ошибка' });
+    }
+}
+
+module.exports.login = async function (req, res) {
+    try {
+        const { login, password } = req.body;
+        const result = await db.oneOrNone(`select user_id, login from user where login = ${login}, password = ${password};`)
+        return res.status(200).json(result)
+    }
+    catch(e) {
+        console.error(e);
+        res.status(401).json({ error: 'Неправильный логин или пароль' });
+    }
+}
 /* Получение данных из БД */
 
 module.exports.getEquipmentsList = async function (req, res) {

@@ -2,6 +2,10 @@ const express = require('express');
 const router = express.Router();
 const controller = require('../requests/equipmentsController');
 
+/* Регистрация и авторизация */
+router.post('/registration', controller.registration)
+router.post('/login', controller.login)
+
 /* Запросы для получения данных из таблицы */
 router.get('/equipments', controller.getEquipmentsList);
 router.get('/status', controller.getEquipmnetStatusList);
