@@ -1,7 +1,6 @@
 const { db } = require('../config/pg.config');
 
 /* Авторизация и регистрация */
-// TODO: Добавить проверку пользователя на существование
 module.exports.registration = async function (req, res) {
     try {
         const { login, password } = req.body;
@@ -59,8 +58,6 @@ module.exports.getEquipmentsList = async function (req, res) {
             const date_update_string = `${date_update.getFullYear()}-${String(date_update.getMonth()+1).padStart(2,'0')}-${String(date_update.getDate()).padStart(2,'0')}`;
             return { ...el, date_start: date_start_string, date_update: date_update_string }
         })
-        console.log(formatted_result[0].date_start);
-        console.log(formatted_result[0].date_update);
         return res.status(200).json(formatted_result)
     }
     catch(e) {
