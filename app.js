@@ -12,7 +12,7 @@ var app = express();
 app.set('view engine', 'pug');
 
 app.use(cors({
-  origin: 'http://localhost:8080',
+  origin: '*',
   credentials: true
 }));
 app.use(logger('dev'));
