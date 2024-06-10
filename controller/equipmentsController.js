@@ -9,7 +9,7 @@ module.exports.getEquipmentsList = async function (req, res) {
 	|| '~' || quantity || '~' || date_registration) ILIKE '%' || '${search}' || '%' ` : '';
         const result = await db.manyOrNone(`select equipment_status_name, us.login, 
 	equipment_name, inventory_number,
-	resp.middle_name || ' ' || resp.first_name || ' ' || resp.last_name as responsible_fullname,
+	resp.last_name || ' ' || resp.first_name || ' ' || resp.middle_name as responsible_fullname,
 	division_name,
 	date_start, date_update, balance_cost, quantity
 	date_registration, date_de_registration from equipment
