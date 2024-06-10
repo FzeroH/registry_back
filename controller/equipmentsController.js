@@ -77,6 +77,17 @@ module.exports.getDivisionList = async function (req, res) {
     }
 }
 
+module.exports.getDivisionList = async function (req, res) {
+    try {
+        const result = await db.manyOrNone(`select * from role order by role_id asc;`)
+        return res.status(200).json(result)
+    }
+    catch(e) {
+        console.error(e);
+        res.status(500).json({ error: 'Произошла ошибка' });
+    }
+}
+
 /* Добавление новых данных */
 
 module.exports.addEquipment = async function (req, res) {
