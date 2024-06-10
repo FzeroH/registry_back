@@ -8,7 +8,7 @@ router.post('/registration', controller.registration)
 router.post('/login', controller.login)
 
 /* Запросы для получения данных из таблицы */
-router.get('/equipments', controller.getEquipmentsList);
+router.get('/equipments', middleware.checkUser, controller.getEquipmentsList);
 router.get('/status', middleware.checkEmployee, controller.getEquipmnetStatusList);
 router.get('/responsible', middleware.checkEmployee, controller.getEquipmnetResponsibleList);
 router.get('/division', middleware.checkEmployee, controller.getDivisionList);
