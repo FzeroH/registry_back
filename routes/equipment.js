@@ -12,7 +12,8 @@ router.get('/equipments', middleware.checkUser, controller.getEquipmentsList);
 router.get('/status', middleware.checkEmployee, controller.getEquipmnetStatusList);
 router.get('/responsible', middleware.checkEmployee, controller.getEquipmnetResponsibleList);
 router.get('/division', middleware.checkEmployee, controller.getDivisionList);
-router.get('/role', middleware.checkAdmin, controller.getDivisionList);
+router.get('/role', middleware.checkAdmin, controller.getRoleList);
+router.get('/user', middleware.checkAdmin, controller.getUserList);
 
 /* Запросы для добавления данных в таблицы */
 router.post('/equipments', middleware.checkEmployee, controller.addEquipment);

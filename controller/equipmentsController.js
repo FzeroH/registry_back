@@ -11,7 +11,7 @@ module.exports.getEquipmentsList = async function (req, res) {
 	equipment_name, inventory_number,
 	resp.last_name || ' ' || resp.first_name || ' ' || resp.middle_name as responsible_fullname,
 	division_name,
-	date_start, date_update, balance_cost, quantity
+	date_start, date_update, balance_cost, quantity,
 	date_registration, date_de_registration from equipment
 	join "user" as us on equipment.user_id = us.user_id
 	join "user" as resp on equipment.responsible_id = resp.user_id
@@ -29,9 +29,11 @@ module.exports.getEquipmentsList = async function (req, res) {
             const date_registration = new Date(el.date_registration);
             const date_registration_string = `${date_registration.getFullYear()}-${String(date_registration.getMonth()+1).padStart(2,'0')}-${String(date_registration.getDate()).padStart(2,'0')}`;
 
-            const date_de_registration = new Date(el.date_de_registration);
-            const date_de_registration_string = `${date_de_registration.getFullYear()}-${String(date_de_registration.getMonth()+1).padStart(2,'0')}-${String(date_de_registration.getDate()).padStart(2,'0')}`;
-            return { ...el, date_start: date_start_string, date_update: date_update_string, date_registration: date_registration_string, date_de_registration: date_de_registration_string  }
+            const date_de_registration = el.date_de_registration? new Date(el.date_de_registration) : '';
+            const date_de_registration_string = el.date_de_registration? `${date_de_registration.getFullYear()}-${String(date_de_registration.getMonth()+1).padStart(2,'0')}-${String(date_de_registration.getDate()).padStart(2,'0')}`: '';
+
+            const balance = `${el.balance_cost} руб.`
+            return { ...el, date_start: date_start_string, date_update: date_update_string, date_registration: date_registration_string, date_de_registration: date_de_registration_string, balance_cost: balance  }
         })
         return res.status(200).json(formatted_result)
     }
@@ -77,9 +79,25 @@ module.exports.getDivisionList = async function (req, res) {
     }
 }
 
-module.exports.getDivisionList = async function (req, res) {
+module.exports.getRoleList = async function (req, res) {
     try {
         const result = await db.manyOrNone(`select * from role order by role_id asc;`)
+        return res.status(200).json(result)
+    }
+    catch(e) {
+        console.error(e);
+        res.status(500).json({ error: 'Произошла ошибка' });
+    }
+}
+
+module.exports.getUserList = async function (req, res) {
+    try {
+        const result = await db.manyOrNone(`select user_id, us.role_id, role_name, us.division_id, division_name, 
+	login, first_name, last_name, middle_name 
+	from "user" as us
+	join role on us.role_id = role.role_id
+	join division on us.division_id = division.division_id
+	order by user_id asc;`)
         return res.status(200).json(result)
     }
     catch(e) {
