@@ -26,4 +26,7 @@ router.put('/status', middleware.checkAdmin, controller.updateEquipmnetStatus);
 router.put('/division', middleware.checkAdmin, controller.updateDivision);
 router.put('/user', middleware.checkAdmin, controller.updateUser);
 
+/* Генерация документа */
+router.get('/download', middleware.checkEmployee, controller.generateDocument);
+
 module.exports = router;

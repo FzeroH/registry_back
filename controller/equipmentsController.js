@@ -1,3 +1,4 @@
+const { log } = require('console');
 const { db } = require('../config/pg.config');
 
 /* Получение данных из БД */
@@ -238,4 +239,87 @@ module.exports.updateUser = async function (req, res) {
         console.error(e);
         res.status(500).json({ error: 'Произошла ошибка' });
     }
+}
+
+/* Генерация документа */
+module.exports.generateDocument = async function (req, res) {
+    try {
+        const fs = require('fs');
+        const Docxtemplater = require('docxtemplater');
+        const PizZip = require('pizzip');
+        const path = require('path');
+        const { search } = req.query
+
+        const search_query = search ? `where (equipment_status_name || '~' || us.login || '~' || equipment_name || '~' || inventory_number || '~' || resp.middle_name 
+        || '~' || resp.first_name || '~' || resp.last_name || '~' || division_name || '~' || date_start || '~' || date_update || '~' || balance_cost 
+        || '~' || quantity || '~' || date_registration) ILIKE '%' || '${search}' || '%' ` : '';
+
+        const result = await db.manyOrNone(`select equipment_status_name, us.login, 
+        equipment_name, inventory_number,
+        resp.last_name || ' ' || resp.first_name || ' ' || resp.middle_name as responsible_fullname,
+        division_name,
+        date_start, date_update, balance_cost, quantity,
+        date_registration, date_de_registration from equipment
+        join "user" as us on equipment.user_id = us.user_id
+        join "user" as resp on equipment.responsible_id = resp.user_id
+        join division on resp.division_id = division.division_id
+        join equipment_status on equipment.equipment_status_id = equipment_status.equipment_status_id ${search_query}
+        order by equipment_id asc;`);
+
+        const data = result.map((el) => {
+            const date_start = new Date(el.date_start);
+            const date_start_string = `${date_start.getFullYear()}-${String(date_start.getMonth()+1).padStart(2,'0')}-${String(date_start.getDate()).padStart(2,'0')}`;
+
+            const date_update = new Date(el.date_update);
+            const date_update_string = `${date_update.getFullYear()}-${String(date_update.getMonth()+1).padStart(2,'0')}-${String(date_update.getDate()).padStart(2,'0')}`;
+
+            const date_registration = new Date(el.date_registration);
+            const date_registration_string = `${date_registration.getFullYear()}-${String(date_registration.getMonth()+1).padStart(2,'0')}-${String(date_registration.getDate()).padStart(2,'0')}`;
+
+            const date_de_registration = el.date_de_registration? new Date(el.date_de_registration) : '';
+            const date_de_registration_string = el.date_de_registration? `${date_de_registration.getFullYear()}-${String(date_de_registration.getMonth()+1).padStart(2,'0')}-${String(date_de_registration.getDate()).padStart(2,'0')}`: '';
+
+            const balance = `${el.balance_cost} руб.`
+            return { ...el, date_start: date_start_string, date_update: date_update_string, date_registration: date_registration_string, date_de_registration: date_de_registration_string, balance_cost: balance  }
+        })
+
+        const abs = path.resolve(__dirname,'../docs_template/template.docx')
+        const content = fs.readFileSync(abs, 'binary');
+        const zip = new PizZip(content);
+
+        const doc = new Docxtemplater(zip);
+
+        const date = new Date();
+        const string_date = `${String(date.getDate()).padStart(2,'0')}.${String(date.getMonth()+1).padStart(2,'0')}.${date.getFullYear()}`
+        doc.render({
+            data,
+            string_date
+        });
+
+        const generatedDocument = doc.getZip().generate({ type: 'nodebuffer' });
+        const filename = `Выгрузка данных ${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`
+
+        await fs.writeFileSync(`${__dirname}/../public/${filename}.docx`, generatedDocument);
+        res.on('finish', () => {
+            fs.unlink(`${__dirname}/../public/${filename}.docx`, (err) => {
+                if (err) {
+                    console.error('Ошибка при удалении файла:', err);
+                    return;
+                }
+                console.log('Файл успешно удален');
+            });
+        });
+        await res.download(`${__dirname}/../public/${filename}.docx`, (err) => {
+            if (err) {
+                res.status(500).send(`При загрузке файла произошла ошибка:\n${err}`)
+                console.log(err)
+            }
+        })
+    } catch (e) {
+        console.log(e);
+        res.status(500).json({
+            message: `Произошла ошибка ${e}`
+        })
+    }
+
 }
