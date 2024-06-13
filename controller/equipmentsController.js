@@ -1,4 +1,3 @@
-const { log } = require('console');
 const { db } = require('../config/pg.config');
 
 /* Получение данных из БД */
@@ -10,7 +9,7 @@ module.exports.getEquipmentsList = async function (req, res) {
 	|| '~' || quantity || '~' || date_registration) ILIKE '%' || '${search}' || '%' ` : '';
         const result = await db.manyOrNone(`select equipment_id, equipment_status_name, us.login, 
 	equipment_name, inventory_number,
-	resp.last_name || ' ' || resp.first_name || ' ' || resp.middle_name as responsible_fullname,
+	resp.last_name || ' ' || resp.first_name || ' ' || resp.middle_name as responsible_full_name,
 	division_name, resp.division_id, responsible_id, equipment.equipment_status_id,
 	date_start, date_update, balance_cost, quantity,
 	date_registration, date_de_registration from equipment
@@ -32,9 +31,7 @@ module.exports.getEquipmentsList = async function (req, res) {
 
             const date_de_registration = el.date_de_registration? new Date(el.date_de_registration) : '';
             const date_de_registration_string = el.date_de_registration? `${date_de_registration.getFullYear()}-${String(date_de_registration.getMonth()+1).padStart(2,'0')}-${String(date_de_registration.getDate()).padStart(2,'0')}`: '';
-
-            const balance = `${el.balance_cost} руб.`
-            return { ...el, date_start: date_start_string, date_update: date_update_string, date_registration: date_registration_string, date_de_registration: date_de_registration_string, balance_cost: balance  }
+            return { ...el, date_start: date_start_string, date_update: date_update_string, date_registration: date_registration_string, date_de_registration: date_de_registration_string  }
         })
         return res.status(200).json(formatted_result)
     }
@@ -57,9 +54,9 @@ module.exports.getEquipmnetStatusList = async function (req, res) {
 
 module.exports.getEquipmnetResponsibleList = async function (req, res) {
     try {
-        const result = await db.manyOrNone(`select user_id,
-        middle_name || ' ' || first_name || ' ' || last_name 
-        as equipment_responsible_full_name, "user".division_id, division_name
+        const result = await db.manyOrNone(`select user_id as responsible_id,
+        last_name || ' ' || first_name || ' ' || middle_name as equipment_responsible_full_name, 
+        "user".division_id, division_name
         from "user" join division on "user".division_id = division.division_id where role_id = 3 order by user_id asc;`)
         return res.status(200).json(result)
     }
@@ -194,6 +191,7 @@ module.exports.updateEquipment = async function (req, res) {
             date_registration, 
             date_de_registration
         } = req.body;
+        console.log(req.body)
         const result = await db.oneOrNone(`update equipment set equipment_status_id = $2, responsible_id = $3, equipment_name = $4,
 	inventory_number = $5, date_update =  '${dateString}', balance_cost = $6, quantity = $7, date_registration =$8,
 	date_de_registration = $9 where equipment_id = $1;`, [equipment_id, equipment_status_id , responsible_id, equipment_name, inventory_number, balance_cost, quantity, date_registration, date_de_registration]);
@@ -256,7 +254,7 @@ module.exports.generateDocument = async function (req, res) {
 
         const result = await db.manyOrNone(`select equipment_status_name, us.login, 
         equipment_name, inventory_number,
-        resp.last_name || ' ' || resp.first_name || ' ' || resp.middle_name as responsible_fullname,
+        resp.last_name || ' ' || resp.first_name || ' ' || resp.middle_name as responsible_full_name,
         division_name,
         date_start, date_update, balance_cost, quantity,
         date_registration, date_de_registration from equipment
