@@ -8,10 +8,10 @@ module.exports.getEquipmentsList = async function (req, res) {
         const search_query = search ? `where (equipment_status_name || '~' || us.login || '~' || equipment_name || '~' || inventory_number || '~' || resp.middle_name 
 	|| '~' || resp.first_name || '~' || resp.last_name || '~' || division_name || '~' || date_start || '~' || date_update || '~' || balance_cost 
 	|| '~' || quantity || '~' || date_registration) ILIKE '%' || '${search}' || '%' ` : '';
-        const result = await db.manyOrNone(`select equipment_status_name, us.login, 
+        const result = await db.manyOrNone(`select equipment_id, equipment_status_name, us.login, 
 	equipment_name, inventory_number,
 	resp.last_name || ' ' || resp.first_name || ' ' || resp.middle_name as responsible_fullname,
-	division_name,
+	division_name, resp.division_id, responsible_id, equipment.equipment_status_id,
 	date_start, date_update, balance_cost, quantity,
 	date_registration, date_de_registration from equipment
 	join "user" as us on equipment.user_id = us.user_id
@@ -111,11 +111,11 @@ module.exports.getUserList = async function (req, res) {
 
 module.exports.addEquipment = async function (req, res) {
     try {
-        const { equipment_status_id, user_id, responsible_id, equipment_name, inventory_number, balance_cost, quantity, date_registration } = req.body;
+        const { equipment_status_id, user_id, responsible_id, equipment_name, inventory_number, balance_cost, quantity, date_registration, date_de_registration } = req.body;
         const result = await db.oneOrNone(`insert into equipment(equipment_status_id, user_id, responsible_id, equipment_name,
-	            inventory_number, balance_cost, quantity, date_registration)
-	    values (${ equipment_status_id }, ${ user_id }, ${ responsible_id }, '${equipment_name}', '${ inventory_number }', '${ balance_cost }', '${ quantity }', '${ date_registration }');`)
-        return res.status(200).json(result)
+            inventory_number, balance_cost, quantity, date_registration, date_de_registration)
+    values ($1, $2, $3, $4, $5, $6, $7, $8, $9);`, [equipment_status_id, user_id, responsible_id, equipment_name, inventory_number, balance_cost, quantity, date_registration,date_de_registration])
+    return res.status(200).json(result)
     }
     catch(e) {
         console.error(e);
@@ -194,9 +194,9 @@ module.exports.updateEquipment = async function (req, res) {
             date_registration, 
             date_de_registration
         } = req.body;
-        const result = await db.oneOrNone(`update equipment set equipment_status_id = ${equipment_status_id}, responsible_id = ${responsible_id}, equipment_name = '${equipment_name}',
-	inventory_number = ${inventory_number}, date_update =  '${dateString}', balance_cost = ${balance_cost}, quantity = ${quantity}, date_registration ='${date_registration}',
-	date_de_registration = '${date_de_registration}' where equipment_id = ${equipment_id};`);
+        const result = await db.oneOrNone(`update equipment set equipment_status_id = $2, responsible_id = $3, equipment_name = $4,
+	inventory_number = $5, date_update =  '${dateString}', balance_cost = $6, quantity = $7, date_registration =$8,
+	date_de_registration = $9 where equipment_id = $1;`, [equipment_id, equipment_status_id , responsible_id, equipment_name, inventory_number, balance_cost, quantity, date_registration, date_de_registration]);
         return res.status(200).json(result)
     }
     catch(e) {
